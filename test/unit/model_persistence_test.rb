@@ -312,12 +312,22 @@ module Tire
             assert_instance_of Comment, article.comments.first
             assert_equal '4chan',       article.comments.first.nick
           end
-
+          
           should "automatically cast value to defined property type on strings, integers, and floats" do
             article = PersistentArticleWithTypes.new :title => 12345, :comment_count => '12', :average_score => 10
             assert_equal '12345', article.title
             assert_equal 12, article.comment_count
             assert_equal 10.0, article.average_score
+          end
+
+          should "be referenced by the custom class" do
+            article_created = Time.now
+            posted_at = article_created + 10.minutes
+            article = PersistentArticleWithCastedCollection.new :created_at => article_created,
+                                                                :title => 'Test',
+                                                                :comments => [{:nick => '4chan', :body => 'WHY U NO?', :posted_at => posted_at}]
+            comment = article.comments.first
+            assert_equal comment.posted_within, 10.minutes
           end
 
           should "automatically format strings in ISO8601 with the default UTC designator" do
